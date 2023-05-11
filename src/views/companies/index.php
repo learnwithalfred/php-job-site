@@ -1,12 +1,27 @@
 <?php
+ob_start();
+session_start();
 include('../../partials/header.php');
 include('../../partials/navbar.php');
+include('../../configs/constants.php');
+
+if (isset($_SESSION['company'])) {
+  renderToastMessage($_SESSION['company'], "success");
+
+  unset($_SESSION['company']);
+
+}
+
 ?>
 <div>
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg p-4" style="min-height: 69vh;">
-    <h1 class="p-8 text-3xl font-bold">
-      Categories
-    </h1>
+    <div class="flex justify-between items-center">
+      <h1 class="p-8 text-3xl font-bold">
+        Categories
+      </h1>
+      <a href="new.php" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Add New</a>
+
+    </div>
     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
       <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
@@ -59,5 +74,6 @@ include('../../partials/navbar.php');
 
 <?php
 include('../../partials/footer.php');
+ob_end_flush();
 
 ?>
