@@ -4,13 +4,19 @@ session_start();
 include('../../partials/header.php');
 include('../../partials/navbar.php');
 include('../../configs/constants.php');
+include('../../configs/connection.php');
 
 if (isset($_SESSION['company'])) {
   renderToastMessage($_SESSION['company'], "success");
 
   unset($_SESSION['company']);
-
 }
+
+
+$result = mysqli_query($connection, "SELECT * FROM company") or die(mysqlI_error($connection));
+
+
+
 
 ?>
 <div>
@@ -29,16 +35,14 @@ if (isset($_SESSION['company'])) {
             #
           </th>
           <th scope="col" class="px-6 py-3">
-            Name
+            Company Name
           </th>
           <th scope="col" class="px-6 py-3">
-            Name
+            Website
           </th>
           <th scope="col" class="px-6 py-3">
-            Name
+            Address
           </th>
-          <th scope="col" class="px-6 py-3">
-            Name
           </th>
           <th scope="col" class="px-6 py-3">
             Action
@@ -46,27 +50,46 @@ if (isset($_SESSION['company'])) {
         </tr>
       </thead>
       <tbody>
+        <?php if ($result) : ?>
+        <?php while ($row = mysqli_fetch_assoc($result)) : ?>
+        <?php
+            $id = $row['id'];
+            $fName = $row['name'];
+            $website = $row['website'];
+            $address = $row['address'];
+            ?>
         <tr class="bg-white border-b">
           <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-            1
+            <?= $id ?>
           </th>
           <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-            John
+            <?= $fName ?>
           </th>
           <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-            John
+            <?= $website ?>
           </th>
           <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-            John
-          </th>
-          <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-            John
+            <?= $address ?>
           </th>
           <td class="px-6 py-4">
-            <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+            <a href="show.php?id=<?php echo $id; ?>"
+              class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Show</a>
+            <a href="edit.php?id=<?php echo $id; ?>"
+              class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+            <a href="delete.php?id=<?php echo $id; ?>"
+              class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Delete</a>
           </td>
         </tr>
+        <?php endwhile; ?>
+        <?php else : ?>
+        <tr class="bg-white border-b">
+          <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+            No Companies found
+          </th>
+        </tr>
+        <?php endif; ?>
       </tbody>
+
 
     </table>
   </div>

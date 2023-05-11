@@ -1,6 +1,24 @@
 <?php
 include('../../partials/header.php');
 include('../../partials/navbar.php');
+include('../../configs/constants.php');
+include('../../configs/connection.php');
+
+if (isset($_GET['id'])) {
+  $company_id = $_GET['id'];
+} else {
+  echo 'no id';
+}
+
+
+$result = mysqli_query($connection, "SELECT * FROM company where id=$company_id") or die(mysqlI_error($connection));
+$row = mysqli_fetch_array($result);
+
+
+$company_name = $row['name'];
+$company_website = $row['website'];
+$company_location = $row['address'];
+
 ?>
 
 <main class="w-full mx-auto">
@@ -24,7 +42,6 @@ include('../../partials/navbar.php');
     </div>
   </div>
 </main>
-
 
 
 <?php

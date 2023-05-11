@@ -5,12 +5,59 @@ include('../../partials/header.php');
 include('../../partials/navbar.php');
 include('../../configs/constants.php');
 include('../../configs/connection.php');
+
+if (isset($_GET['id'])) {
+  $company_id = $_GET['id'];
+} else {
+  $_SESSION['company'] = "No id provided";
+
+  header("Location: index.php");
+}
+
+$result = mysqli_query($connection, "SELECT * FROM company where id=$company_id") or die(mysqlI_error($connection));
+$row = mysqli_fetch_array($result);
+
+$name = $row['name'];
+$website = $row['website'];
+$address = $row['address'];
+
+if (isset($_POST['company_update'])) {
+  $name = isset($_POST['name']) ? sanitizeInput($_POST['name']) : $row['name'];
+  $address = isset($_POST['address']) ? sanitizeInput($_POST['address']) : $row['website'];
+  $website = isset($_POST['website']) ? sanitizeInput($_POST['website']) : $row['address'];
+
+
+  // If there are no validation errors, proceed to store the data in the database
+  if ($name && $address && $website) {
+
+
+    $query = "UPDATE company SET name = '$name', address = '$address', website = '$website' WHERE id = $company_id;";
+    $result = mysqli_query($connection, $query) or die(mysqli_error($connection));
+
+    if ($result) {
+
+      $_SESSION['company'] = "Company Update Successfully";
+
+      header("Location: index.php");
+      exit;
+    } else {
+      $_SESSION['company_error'] = mysqli_error($connection);
+
+      header("Location: new.php");
+      exit;
+    }
+  } else {
+    renderToastMessage("Please fill in all the fields", 'danger');
+  }
+}
+
+
 ?>
 <div class="container sm:px-4" style="min-height: 66vh;">
   <div>
     <section class=" bg-white ">
       <div class=" max-w-2xl px-4 py-8 mx-auto lg:py-16">
-        <h2 class="mb-4 text-xl font-bold text-gray-900">Add a company</h2>
+        <h2 class="mb-4 text-xl font-bold text-gray-900">Edit a <?php echo $name; ?> Company</h2>
         <form action="" method="POST">
           <div class="grid gap-4 mb-4 sm:grid-cols-2 sm:gap-6 sm:mb-5">
             <div class="sm:col-span-2">
