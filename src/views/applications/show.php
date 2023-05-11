@@ -5,7 +5,7 @@ include('../../partials/navbar.php');
 
 <main class="w-full mx-auto">
 
-  <div class="container sm:px-4" style="min-height: 69vh;">
+  <div class="container sm:px-4" style="min-height: 66vh;">
     <div class="mx-auto max-w-3xl p-4 my-8 border border-gray-200 rounded-lg shadow sm:p-8">
       <div class="flex justify-between items-center">
         <h5 class="mb-2 text-4xl font-extrabold text-gray-900">Work fast from anywhere</h5>

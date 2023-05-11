@@ -3,7 +3,7 @@ include('../../partials/header.php');
 include('../../partials/navbar.php');
 ?>
 <div>
-  <div class="relative overflow-x-auto shadow-md sm:rounded-lg p-4" style="min-height: 69vh;">
+  <div class="relative overflow-x-auto shadow-md sm:rounded-lg p-4" style="min-height: 66vh;">
     <h1 class="p-8 text-3xl font-bold">
       Categories
     </h1>

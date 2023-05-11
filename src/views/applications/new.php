@@ -1,41 +1,212 @@
 <?php
+ob_start();
+session_start();
 include('../../partials/header.php');
 include('../../partials/navbar.php');
+include('../../configs/constants.php');
+include('../../configs/connection.php');
+
+if (isset($_GET['id'])) {
+  $job_id = $_GET['id'];
+} else {
+  echo 'no id';
+}
+
+
+if (isset($_SESSION['application_error'])) {
+  renderToastMessage($_SESSION['application_error'], 'danger');
+  unset($_SESSION['application_error']);
+}
+
+if (isset($_SESSION['application'])) {
+  renderToastMessage($_SESSION['application'], 'success');
+  unset($_SESSION['application']);
+}
+
+if (isset($_POST['application_submit'])) {
+  $cover_letter = isset($_POST['cover_letter']) ? $_POST['cover_letter'] : "";
+  $job_id = isset($_POST['job_id']) ? sanitizeInput($_POST['job_id']) : "";
+  $full_name = isset($_POST['full_name']) ? sanitizeInput($_POST['full_name']) : "";
+  $email = isset($_POST['email']) ? sanitizeInput($_POST['email']) : "";
+  $cv = isset($_FILES['cv']) ? $_FILES['cv'] : "";
+
+  if ($cv && $cover_letter && $job_id && $full_name && $email) {
+    // save file
+    $filename = $_FILES["cv"]["name"];
+    $tempname = $_FILES["cv"]["tmp_name"];
+    $folder = __DIR__ . "/files/" . $filename;
+
+
+
+    $query = "INSERT INTO application(cv,cover_letter,job_id, full_name, email) VALUES ('$filename','$cover_letter','$job_id', '$full_name', '$email' )";
+    $result = mysqli_query($connection, $query) or die(mysqli_error($connection));
+
+    if ($result) {
+      move_uploaded_file($tempname, $folder);
+
+      $_SESSION['application'] = "Application Submitted Successfully";
+
+      header("Location: new.php?id=$job_id");
+      exit;
+    } else {
+      $_SESSION['application_error'] = mysqli_error($connection);
+      header("Location: new.php?id=$job_id");
+
+      exit;
+    }
+  } else {
+    renderToastMessage("Please fill in all the fields", 'danger');
+  }
+}
+
+
+
+$result = mysqli_query($connection,  "SELECT 
+            job.id,
+            job.title, 
+            job.work_arrangement, 
+            job.description, 
+            job.salary, 
+            job.languages, 
+            job.created_at, 
+            company.name AS company, 
+            category.name AS category  
+          FROM job
+          JOIN company ON job.company_id = company.id
+          JOIN category ON job.category_id = category.id where job.id = $job_id") or die(mysqlI_error($connection));
+
+$row = mysqli_fetch_array($result);
+
+$id = $row['id'];
+$title = $row['title'];
+$work_arrangement = $row['work_arrangement'];
+$description = $row['description'];
+$salary = $row['salary'];
+$languages = $row['languages'];
+$created_at = $row['created_at'];
+$company = $row['company'];
+$category = $row['category'];
+
+
+$languages = unserialize($languages);
 ?>
-<div class="container sm:px-4" style="min-height: 69vh;">
-  <div>
-    <section class=" bg-white ">
-      <div class=" max-w-2xl px-4 py-8 mx-auto lg:py-16">
-        <h2 class="mb-4 text-xl font-bold text-gray-900">Add a Job</h2>
-        <form action="" method="POST">
-          <div class="grid gap-4 mb-4 sm:grid-cols-2 sm:gap-6 sm:mb-5">
-            <div class="sm:col-span-2">
-              <label for="title" class="block mb-2 text-sm font-medium text-gray-900">Job title</label>
-              <input type="text" name="title" id="title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 " placeholder="job title" required="">
-            </div>
 
-            <div class="sm:col-span-2">
-              <label for="amount" class="block mb-2 text-sm font-medium text-gray-900">job Amount</label>
-              <input type="number" name="amount" id="amount" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 " placeholder="job Aount" required="">
-            </div>
-            <div class="sm:col-span-2">
-              <label for="year" class="block mb-2 text-sm font-medium text-gray-900">Year</label>
-              <input type="string" name="year" id="year" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 " placeholder="Year" required="">
-            </div>
-            <input type="hidden" name="creator_id" id="creator_id" value="1">
-            <input type="hidden" name="classroom_id" id="creator_id" value="1">
+<main class="w-full mx-auto">
+  <div class="sm:px-4" style="min-height: 66vh;">
+    <h1 class="text-3xl font-semibold text-center py-6">
+      Summit your application for <?= $title ?> job
+    </h1>
+    <div class="flex">
+      <div class="w-3/4 mx-auto p-4 m-8 border border-gray-200 rounded-lg shadow sm:p-8">
+        <div class="flex justify-between items-center">
+          <h5 class="mb-2 text-4xl font-extrabold text-gray-900">
+            <a href="/php-job-site/src/views/jobs/show.php?id=<?php echo $id; ?>">
+              <?= $title ?>
+            </a>
+        </div>
+        <div class="flex">
 
-            <div class="flex items-center space-x-4">
-              <input type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" name="job_submit" value="submit">
+          <span
+            class="py-2.5 px-5 mr-2 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:outline-none focus:ring-blue-700 focus:text-blue-700 inline-flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-door"
+              viewBox="0 0 16 16">
+              <path
+                d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146ZM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4H2.5Z" />
+            </svg>
+            <span class="mx-2">
 
-        </form>
+              <?= $company ?>
+            </span> </span>
+          <span
+            class="py-2.5 px-5 mr-2 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:outline-none focus:ring-blue-700 focus:text-blue-700 inline-flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bag-check"
+              viewBox="0 0 16 16">
+              <path fill-rule="evenodd"
+                d="M10.854 8.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708 0z" />
+              <path
+                d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1zm3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4h-3.5zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5z" />
+            </svg>
+            <span class="mx-2">
+              <?= $work_arrangement ?>
+            </span>
+          </span>
+          <span
+            class="py-2.5 px-5 mr-2 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:outline-none focus:ring-blue-700 focus:text-blue-700 inline-flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+              class="bi bi-currency-exchange" viewBox="0 0 16 16">
+              <path
+                d="M0 5a5.002 5.002 0 0 0 4.027 4.905 6.46 6.46 0 0 1 .544-2.073C3.695 7.536 3.132 6.864 3 5.91h-.5v-.426h.466V5.05c0-.046 0-.093.004-.135H2.5v-.427h.511C3.236 3.24 4.213 2.5 5.681 2.5c.316 0 .59.031.819.085v.733a3.46 3.46 0 0 0-.815-.082c-.919 0-1.538.466-1.734 1.252h1.917v.427h-1.98c-.003.046-.003.097-.003.147v.422h1.983v.427H3.93c.118.602.468 1.03 1.005 1.229a6.5 6.5 0 0 1 4.97-3.113A5.002 5.002 0 0 0 0 5zm16 5.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0zm-7.75 1.322c.069.835.746 1.485 1.964 1.562V14h.54v-.62c1.259-.086 1.996-.74 1.996-1.69 0-.865-.563-1.31-1.57-1.54l-.426-.1V8.374c.54.06.884.347.966.745h.948c-.07-.804-.779-1.433-1.914-1.502V7h-.54v.629c-1.076.103-1.808.732-1.808 1.622 0 .787.544 1.288 1.45 1.493l.358.085v1.78c-.554-.08-.92-.376-1.003-.787H8.25zm1.96-1.895c-.532-.12-.82-.364-.82-.732 0-.41.311-.719.824-.809v1.54h-.005zm.622 1.044c.645.145.943.38.943.796 0 .474-.37.8-1.02.86v-1.674l.077.018z" />
+            </svg>
+            <span class="mx-2">
+              <?= $salary ?>
+            </span>
+          </span>
+        </div>
+
+        <div class="text-sm text-gray-600 py-6">
+          <?= $description ?>
+
+        </div>
+
+        <ul class="flex max-w-md space-y-1 text-gray-500 list-inside pt-4">
+          <?php foreach ($languages as $language) : ?>
+          <li class="flex items-center px-2">
+            <svg class="w-4 h-4 mr-1.5 text-gray-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clip-rule="evenodd"></path>
+            </svg>
+            <span class="px-0.1">
+              <?= $language ?>
+            </span>
+          </li>
+          <?php endforeach; ?>
+        </ul>
       </div>
-    </section>
+      <div class="w-1/4">
+        <div class="container mx-auto px-4 py-8">
+          <h1 class="text-2xl font-bold mb-4">Send your application</h1>
+
+          <form action="" method="POST" enctype="multipart/form-data">
+            <div class="mb-4">
+              <div class="mb-4">
+                <label class="block mb-2 font-medium" for="full_name">Full Name</label>
+                <input type="text" name="full_name" id="full_name" placeholder="John Deo"
+                  class="border border-gray-300 rounded p-2 w-full" required="">
+              </div>
+              <div class="mb-4">
+                <label class="block mb-2 font-medium" for="email">Your Email</label>
+                <input type="email" name="email" id="email" placeholder="john@doe.com"
+                  class="border border-gray-300 rounded p-2 w-full" required="">
+              </div>
+
+              <label class="block mb-2 font-medium" for="cv">CV (PDF)</label>
+              <input type="file" name="cv" id="cv" accept=".pdf" class="border border-gray-300 rounded p-2 w-full"
+                required="">
+            </div>
+
+            <input type="hidden" name="job_id" value="<?php echo $id; ?>">
+            <div class="mb-4">
+              <label class="block mb-2 font-medium" for="cover_letter">Cover Letter</label>
+              <textarea id="message" name="cover_letter" rows="6"
+                class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 "
+                placeholder="Write your cover letter here..." required=""></textarea>
+
+            </div>
+
+            <input name="application_submit" value="Send Application" type="submit"
+              class=" bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded">
+          </form>
+        </div>
+      </div>
+
+    </div>
   </div>
+</main>
 
 
-</div>
 <?php
 include('../../partials/footer.php');
-
+ob_end_flush();
 ?>

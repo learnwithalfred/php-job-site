@@ -6,17 +6,17 @@ include('../../partials/navbar.php');
 include('../../configs/constants.php');
 include('../../configs/connection.php');
 
-if (isset($_SESSION['user'])) {
-  renderToastMessage($_SESSION['user'], 'success');
-  unset($_SESSION['user']);
+if (isset($_SESSION['language'])) {
+  renderToastMessage($_SESSION['language'], 'success');
+  unset($_SESSION['language']);
 }
-if (isset($_SESSION['user_error'])) {
-  renderToastMessage($_SESSION['user_error'], 'danger');
-  unset($_SESSION['user_error']);
+if (isset($_SESSION['language_error'])) {
+  renderToastMessage($_SESSION['language_error'], 'danger');
+  unset($_SESSION['language_error']);
 }
 
 
-$result = mysqli_query($connection, "SELECT * FROM user") or die(mysqlI_error($connection));
+$result = mysqli_query($connection, "SELECT * FROM language") or die(mysqlI_error($connection));
 
 
 ?>
@@ -24,7 +24,7 @@ $result = mysqli_query($connection, "SELECT * FROM user") or die(mysqlI_error($c
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg p-4" style="min-height: 66vh;">
     <div class="flex justify-between items-center">
       <h1 class="p-8 text-3xl font-bold">
-        Users
+        Categories
       </h1>
       <a href="new.php" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Add New</a>
 
@@ -36,12 +36,11 @@ $result = mysqli_query($connection, "SELECT * FROM user") or die(mysqlI_error($c
             #
           </th>
           <th scope="col" class="px-6 py-3">
-            user Name
+            language Name
+          </th>
           </th>
           <th scope="col" class="px-6 py-3">
-            Email
-          </th>
-
+            Action
           </th>
         </tr>
       </thead>
@@ -50,8 +49,7 @@ $result = mysqli_query($connection, "SELECT * FROM user") or die(mysqlI_error($c
         <?php while ($row = mysqli_fetch_assoc($result)) : ?>
         <?php
             $id = $row['id'];
-            $fName = $row['full_name'];
-            $email = $row['email'];
+            $fName = $row['name'];
             ?>
         <tr class="bg-white border-b">
           <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
@@ -60,19 +58,26 @@ $result = mysqli_query($connection, "SELECT * FROM user") or die(mysqlI_error($c
           <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
             <?= $fName ?>
           </th>
-          <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-            <?= $email ?>
-          </th>
+          <td class="px-6 py-4">
+            <a href="show.php?id=<?php echo $id; ?>"
+              class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Show</a>
+            <a href="edit.php?id=<?php echo $id; ?>"
+              class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+            <a href="delete.php?id=<?php echo $id; ?>"
+              class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Delete</a>
+          </td>
         </tr>
         <?php endwhile; ?>
         <?php else : ?>
         <tr class="bg-white border-b">
           <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-            No User found
+            No language found
           </th>
         </tr>
         <?php endif; ?>
       </tbody>
+
+
     </table>
   </div>
 </div>
